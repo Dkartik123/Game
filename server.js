@@ -300,6 +300,44 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Restart game
+  socket.on('restart-game', () => {
+    const roomCode = socket.roomCode;
+    const room = gameRooms.get(roomCode);
+
+    if (!room || !room.isPlaying) return;
+
+    const player = room.players.get(socket.id);
+
+    // Reset all players to initial state
+    let playerIndex = 0;
+    room.players.forEach((p) => {
+      p.x = 100 + (playerIndex * 150);
+      p.y = 100 + (playerIndex * 100);
+      p.score = 0;
+      p.health = 100;
+      p.isAlive = true;
+      p.powerUp = null;
+      playerIndex++;
+    });
+
+    // Reset game state
+    room.gameState = {
+      orbs: generateOrbs(10),
+      powerUps: [],
+      startTime: Date.now(),
+      duration: 180 // 3 minutes
+    };
+
+    io.to(roomCode).emit('game-restarted', {
+      playerName: player?.name || 'Unknown',
+      players: Array.from(room.players.values()),
+      gameState: room.gameState
+    });
+
+    console.log(`Game restarted in room ${roomCode} by ${player?.name}`);
+  });
+
   // Quit game
   socket.on('quit-game', () => {
     const roomCode = socket.roomCode;

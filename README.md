@@ -23,7 +23,7 @@ Players control their character in a battle arena, collecting energy orbs to inc
 - **Movement**: Arrow Keys or WASD
 - **Attack**: Spacebar
 - **Activate Power-up**: E key
-- **Menu**: ESC key
+- **Pause Menu**: ESC key (Resume / Restart / Quit)
 
 ### Power-ups
 

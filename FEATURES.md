@@ -28,9 +28,10 @@
 ### In-Game Menu
 - [x] Pause game functionality
 - [x] Resume game functionality
+- [x] Restart game functionality
 - [x] Quit game functionality
 - [x] Messages displayed to all players when menu actions occur
-- [x] Shows who paused/quit the game
+- [x] Shows who paused/restarted/quit the game
 
 ### Scoring & Winning
 - [x] Real-time score display for all players

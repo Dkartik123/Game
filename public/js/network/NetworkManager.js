@@ -79,6 +79,10 @@ export class NetworkManager {
       this.emit('game-resumed', data);
     });
 
+    this.socket.on('game-restarted', (data) => {
+      this.emit('game-restarted', data);
+    });
+
     this.socket.on('player-quit', (data) => {
       this.emit('player-quit', data);
     });
@@ -171,6 +175,12 @@ export class NetworkManager {
   resumeGame() {
     if (this.connected) {
       this.socket.emit('resume-game');
+    }
+  }
+
+  restartGame() {
+    if (this.connected) {
+      this.socket.emit('restart-game');
     }
   }
 

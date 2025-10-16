@@ -78,6 +78,11 @@ class BattleArenaGame {
       this.resumeGame();
     });
 
+    document.getElementById('restart-btn').addEventListener('click', () => {
+      this.audio.playSound('click');
+      this.restartGame();
+    });
+
     document.getElementById('quit-btn').addEventListener('click', () => {
       this.audio.playSound('click');
       this.quitGame();
@@ -149,6 +154,18 @@ class BattleArenaGame {
       if (this.game) {
         this.ui.showNotification(`${data.playerName} resumed the game`, 'info');
       }
+    });
+
+    this.network.on('game-restarted', (data) => {
+      this.audio.playSound('game-start');
+      this.ui.showNotification(`${data.playerName} restarted the game`, 'info');
+      
+      // Stop current game and start fresh
+      if (this.game) {
+        this.game.stop();
+      }
+      this.startGame(data);
+      this.ui.hideGameMenu();
     });
 
     this.network.on('error', (message) => {
@@ -228,6 +245,13 @@ class BattleArenaGame {
       this.game.resume();
       this.network.resumeGame();
       this.ui.hideGameMenu();
+    }
+  }
+
+  restartGame() {
+    if (this.game) {
+      this.ui.hideGameMenu();
+      this.network.restartGame();
     }
   }
 
