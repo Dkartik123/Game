@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battle Arena - Multiplayer Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Main Menu Screen -->
+  <div id="main-menu" class="screen active">
+    <div class="menu-container">
+      <h1 class="game-title">⚔️ BATTLE ARENA ⚔️</h1>
+      <p class="game-subtitle">Real-time Multiplayer Battle Game</p>
+      
+      <div class="menu-options">
+        <button id="create-room-btn" class="menu-btn primary">Create Room</button>
+        <button id="join-room-btn" class="menu-btn">Join Room</button>
+      </div>
+
+      <div class="info-section">
+        <h3>How to Play</h3>
+        <ul>
+          <li>🎮 Move: Arrow Keys or WASD</li>
+          <li>⚔️ Attack: SPACE</li>
+          <li>⚡ Use Power-up: E</li>
+          <li>⏸️ Menu: ESC</li>
+        </ul>
+        <p class="info-text">Collect energy orbs to score points. Attack other players to steal their points. Most points when timer runs out wins!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Room Screen -->
+  <div id="create-room-screen" class="screen">
+    <div class="menu-container">
+      <h2>Create a Room</h2>
+      <div class="form-group">
+        <label for="create-player-name">Your Name:</label>
+        <input type="text" id="create-player-name" maxlength="15" placeholder="Enter your name" autocomplete="off">
+      </div>
+      <div class="button-group">
+        <button id="confirm-create-btn" class="menu-btn primary">Create</button>
+        <button id="back-from-create-btn" class="menu-btn">Back</button>
+      </div>
+      <p id="create-error" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- Join Room Screen -->
+  <div id="join-room-screen" class="screen">
+    <div class="menu-container">
+      <h2>Join a Room</h2>
+      <div class="form-group">
+        <label for="join-player-name">Your Name:</label>
+        <input type="text" id="join-player-name" maxlength="15" placeholder="Enter your name" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="room-code-input">Room Code:</label>
+        <input type="text" id="room-code-input" maxlength="6" placeholder="Enter room code" autocomplete="off">
+      </div>
+      <div class="button-group">
+        <button id="confirm-join-btn" class="menu-btn primary">Join</button>
+        <button id="back-from-join-btn" class="menu-btn">Back</button>
+      </div>
+      <p id="join-error" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- Lobby Screen -->
+  <div id="lobby-screen" class="screen">
+    <div class="lobby-container">
+      <h2>Game Lobby</h2>
+      <div class="room-code-display">
+        <span>Room Code: <strong id="lobby-room-code"></strong></span>
+        <button id="copy-code-btn" class="copy-btn">📋 Copy</button>
+      </div>
+      
+      <div class="players-waiting">
+        <h3>Players (<span id="player-count">0</span>/4)</h3>
+        <div id="players-list" class="players-list"></div>
+      </div>
+
+      <div class="lobby-actions">
+        <button id="start-game-btn" class="menu-btn primary" disabled>Start Game</button>
+        <button id="leave-lobby-btn" class="menu-btn">Leave Lobby</button>
+      </div>
+
+      <p class="lobby-info">Waiting for players... (2-4 players needed)</p>
+      <p id="lobby-status" class="status-message"></p>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <!-- HUD -->
+    <div id="game-hud">
+      <div class="hud-top">
+        <div id="timer-display" class="timer">
+          <span class="timer-label">⏱️</span>
+          <span id="timer-value">3:00</span>
+        </div>
+        <button id="menu-btn" class="hud-btn">☰ Menu</button>
+      </div>
+
+      <div id="scoreboard" class="scoreboard"></div>
+
+      <div id="power-up-indicator" class="power-up-indicator hidden">
+        <span id="power-up-name"></span>
+        <div class="power-up-bar">
+          <div id="power-up-bar-fill" class="power-up-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Arena -->
+    <div id="game-arena" class="game-arena">
+      <!-- Players and objects will be added dynamically -->
+    </div>
+
+    <!-- In-game Menu Overlay -->
+    <div id="game-menu-overlay" class="overlay hidden">
+      <div class="menu-panel">
+        <h2>⏸️ PAUSED</h2>
+        <button id="resume-btn" class="menu-btn primary">Resume Game</button>
+        <button id="quit-btn" class="menu-btn danger">Quit to Menu</button>
+      </div>
+    </div>
+
+    <!-- Game Message Overlay -->
+    <div id="message-overlay" class="overlay hidden">
+      <div class="message-panel">
+        <h2 id="message-title"></h2>
+        <p id="message-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="game-over-screen" class="screen">
+    <div class="game-over-container">
+      <h1 class="game-over-title">🏆 GAME OVER 🏆</h1>
+      <div id="winner-display" class="winner-display"></div>
+      
+      <div class="final-scores">
+        <h3>Final Scores</h3>
+        <div id="final-scores-list"></div>
+      </div>
+
+      <div class="button-group">
+        <button id="play-again-btn" class="menu-btn primary">Play Again</button>
+        <button id="main-menu-btn" class="menu-btn">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="audio-menu-click" preload="auto">
+    <source src="sounds/click.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-game-start" preload="auto">
+    <source src="sounds/game-start.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-collect" preload="auto">
+    <source src="sounds/collect.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-hit" preload="auto">
+    <source src="sounds/hit.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-attack" preload="auto">
+    <source src="sounds/attack.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-powerup" preload="auto">
+    <source src="sounds/powerup.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audio-game-over" preload="auto">
+    <source src="sounds/game-over.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- Game Scripts -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
+
