@@ -289,7 +289,7 @@ class BattleArenaGame {
       this.game = null;
     }
 
-    this.ui.showGameOver(data.winner, data.finalScores);
+    this.ui.showGameOver(data.winner, data.finalScores, data.reason);
   }
 }
 

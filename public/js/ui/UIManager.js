@@ -86,12 +86,26 @@ export class UIManager {
     overlay.classList.add('hidden');
   }
 
-  showGameOver(winner, finalScores) {
+  showGameOver(winner, finalScores, reason) {
     this.showScreen('game-over-screen');
     
     // Display winner
     const winnerDisplay = document.getElementById('winner-display');
-    winnerDisplay.textContent = `🏆 ${winner} WINS! 🏆`;
+    if (reason) {
+      winnerDisplay.textContent = `🏆 ${winner} WINS! 🏆`;
+      // Show reason below winner
+      const gameOverContainer = document.querySelector('.game-over-container');
+      const existingReason = gameOverContainer.querySelector('.game-over-reason');
+      if (existingReason) {
+        existingReason.remove();
+      }
+      const reasonEl = document.createElement('div');
+      reasonEl.className = 'game-over-reason';
+      reasonEl.textContent = reason;
+      winnerDisplay.insertAdjacentElement('afterend', reasonEl);
+    } else {
+      winnerDisplay.textContent = `🏆 ${winner} WINS! 🏆`;
+    }
     
     // Display final scores
     const scoresList = document.getElementById('final-scores-list');

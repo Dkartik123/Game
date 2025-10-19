@@ -398,6 +398,20 @@ function handlePlayerLeave(socket, room, roomCode) {
       players: Array.from(room.players.values()),
       newHost: room.host
     });
+
+    // Check if game is playing and only 1 player left - end game
+    if (room.isPlaying && room.players.size === 1) {
+      const remainingPlayer = Array.from(room.players.values())[0];
+      
+      io.to(roomCode).emit('game-ended', {
+        winner: remainingPlayer.name,
+        finalScores: [{ name: remainingPlayer.name, score: remainingPlayer.score }],
+        reason: 'All other players left the game'
+      });
+
+      room.isPlaying = false;
+      console.log(`Game in room ${roomCode} ended - only one player remaining`);
+    }
   }
 }
 

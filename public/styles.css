@@ -846,6 +846,18 @@ h3 {
   border: 2px solid var(--success-color);
 }
 
+.game-over-reason {
+  font-size: 1.1em;
+  color: var(--text-dim);
+  font-weight: normal;
+  font-style: italic;
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
 .final-scores {
   margin: 30px 0;
   padding: 20px;
