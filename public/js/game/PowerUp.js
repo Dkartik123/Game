@@ -11,9 +11,8 @@ export class PowerUp {
     const powerUp = document.createElement('div');
     powerUp.className = `powerup ${this.type}`;
     powerUp.id = `powerup-${this.id}`;
-    powerUp.style.transform = `translate(${this.x}px, ${this.y}px)`;
-    powerUp.style.left = '0';
-    powerUp.style.top = '0';
+    powerUp.style.left = `${this.x}px`;
+    powerUp.style.top = `${this.y}px`;
     
     // Add icon based on type
     const icons = {
@@ -33,7 +32,7 @@ export class PowerUp {
     if (this.element && this.element.parentElement) {
       // Animate removal
       this.element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-      this.element.style.transform = `translate(${this.x}px, ${this.y}px) scale(0)`;
+      this.element.style.transform = 'scale(0)';
       this.element.style.opacity = '0';
       
       setTimeout(() => {

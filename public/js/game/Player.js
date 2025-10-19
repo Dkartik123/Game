@@ -113,10 +113,9 @@ export class Player {
   }
 
   update(deltaTime) {
-    // Update visual position using transform for better performance
-    this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
-    this.element.style.left = '0';
-    this.element.style.top = '0';
+    // Update visual position
+    this.element.style.left = `${this.x}px`;
+    this.element.style.top = `${this.y}px`;
     
     // Update health bar
     const healthFill = this.element.querySelector('.player-health-fill');

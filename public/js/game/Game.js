@@ -12,8 +12,13 @@ export class Game {
     this.audio = audio;
     
     this.arena = document.getElementById('game-arena');
-    this.arenaWidth = 800;
-    this.arenaHeight = 600;
+    // Get actual arena dimensions from the element
+    // Use clientWidth/clientHeight for inner dimensions (excluding borders)
+    this.arenaWidth = this.arena.clientWidth;
+    this.arenaHeight = this.arena.clientHeight;
+    
+    console.log('Arena dimensions:', this.arenaWidth, 'x', this.arenaHeight);
+    console.log('Window dimensions:', window.innerWidth, 'x', window.innerHeight);
     
     this.localPlayerId = network.socket.id;
     this.localPlayer = null;
@@ -43,11 +48,15 @@ export class Game {
 
   initializePlayers(playersData) {
     playersData.forEach(playerData => {
+      // Scale player positions to current window size
+      const scaledX = (playerData.x / 1600) * this.arenaWidth;
+      const scaledY = (playerData.y / 1200) * this.arenaHeight;
+      
       const player = new Player(
         playerData.id,
         playerData.name,
-        playerData.x,
-        playerData.y,
+        scaledX,
+        scaledY,
         playerData.color,
         this.arena
       );
@@ -62,7 +71,11 @@ export class Game {
 
   initializeOrbs(orbsData) {
     orbsData.forEach(orbData => {
-      const orb = new Orb(orbData.id, orbData.x, orbData.y, this.arena);
+      // Scale coordinates to current window size
+      const scaledX = (orbData.x / 1600) * this.arenaWidth;
+      const scaledY = (orbData.y / 1200) * this.arenaHeight;
+      console.log(`Orb: server(${orbData.x}, ${orbData.y}) -> scaled(${scaledX}, ${scaledY})`);
+      const orb = new Orb(orbData.id, scaledX, scaledY, this.arena);
       this.orbs.push(orb);
     });
   }
@@ -71,7 +84,10 @@ export class Game {
     this.network.on('player-moved', (data) => {
       const player = this.players.get(data.playerId);
       if (player && data.playerId !== this.localPlayerId) {
-        player.setPosition(data.x, data.y);
+        // Scale positions to current window size
+        const scaledX = (data.x / 1600) * this.arenaWidth;
+        const scaledY = (data.y / 1200) * this.arenaHeight;
+        player.setPosition(scaledX, scaledY);
         player.setDirection(data.direction);
       }
     });
@@ -91,8 +107,10 @@ export class Game {
         this.orbs[orbIndex].remove();
         this.orbs.splice(orbIndex, 1);
         
-        // Add new orb
-        const newOrb = new Orb(data.newOrb.id, data.newOrb.x, data.newOrb.y, this.arena);
+        // Add new orb with scaled coordinates
+        const scaledX = (data.newOrb.x / 1600) * this.arenaWidth;
+        const scaledY = (data.newOrb.y / 1200) * this.arenaHeight;
+        const newOrb = new Orb(data.newOrb.id, scaledX, scaledY, this.arena);
         this.orbs.push(newOrb);
       }
       
@@ -106,7 +124,10 @@ export class Game {
     });
 
     this.network.on('powerup-spawned', (data) => {
-      const powerUp = new PowerUp(data.id, data.type, data.x, data.y, this.arena);
+      // Scale coordinates to current window size
+      const scaledX = (data.x / 1600) * this.arenaWidth;
+      const scaledY = (data.y / 1200) * this.arenaHeight;
+      const powerUp = new PowerUp(data.id, data.type, scaledX, scaledY, this.arena);
       this.powerUps.push(powerUp);
     });
 

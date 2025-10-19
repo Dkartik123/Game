@@ -419,10 +419,11 @@ function generateOrbs(count) {
 }
 
 function generateOrb() {
+  // Generate coordinates in base 1600x1200 grid (will be scaled on client)
   return {
     id: Math.random().toString(36).substring(2, 15),
-    x: Math.random() * 700 + 50,
-    y: Math.random() * 500 + 50
+    x: Math.random() * 1500 + 50,  // Width range: 50 to 1550
+    y: Math.random() * 1100 + 50   // Height range: 50 to 1150
   };
 }
 
@@ -434,8 +435,8 @@ setInterval(() => {
       const powerUp = {
         id: Math.random().toString(36).substring(2, 15),
         type: powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)],
-        x: Math.random() * 700 + 50,
-        y: Math.random() * 500 + 50
+        x: Math.random() * 1500 + 50,  // Width range: 50 to 1550 (base 1600 grid)
+        y: Math.random() * 1100 + 50   // Height range: 50 to 1150 (base 1200 grid)
       };
       room.gameState.powerUps.push(powerUp);
       io.to(roomCode).emit('powerup-spawned', powerUp);

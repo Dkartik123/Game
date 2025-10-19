@@ -6,6 +6,8 @@ export class NetworkManager {
     this.connected = false;
     this.roomCode = null;
     this.playerId = null;
+    this.arenaWidth = 1600;   // Base dimensions for coordinate scaling
+    this.arenaHeight = 1200;
     
     this.connect();
   }
@@ -138,7 +140,14 @@ export class NetworkManager {
   // Game actions
   sendPosition(x, y, direction) {
     if (this.connected) {
-      this.socket.emit('player-move', { x, y, direction });
+      // Scale coordinates back to base 1600x1200 grid for server
+      // Get actual arena dimensions
+      const arena = document.getElementById('game-arena');
+      const arenaWidth = arena.clientWidth;
+      const arenaHeight = arena.clientHeight;
+      const scaledX = (x / arenaWidth) * 1600;
+      const scaledY = (y / arenaHeight) * 1200;
+      this.socket.emit('player-move', { x: scaledX, y: scaledY, direction });
     }
   }
 
