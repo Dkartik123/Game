@@ -53,6 +53,9 @@ export class Game {
     this.initializePlayers(players);
     this.initializeOrbs(gameState.orbs);
     
+    // Update scoreboard immediately to show fresh scores (all 0)
+    this.updateScoreboard();
+    
     this.setupNetworkListeners();
   }
 
@@ -258,6 +261,8 @@ export class Game {
     this.isRunning = true;
     this.lastFrameTime = performance.now();
     this.lastFpsUpdate = this.lastFrameTime;
+    // Update scoreboard to ensure fresh display
+    this.updateScoreboard();
     this.gameLoop(this.lastFrameTime);
   }
 
