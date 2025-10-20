@@ -65,13 +65,16 @@ export class Game {
       const scaledX = (playerData.x / 1600) * this.arenaWidth;
       const scaledY = (playerData.y / 1200) * this.arenaHeight;
       
+      const isLocal = playerData.id === this.localPlayerId;
+      
       const player = new Player(
         playerData.id,
         playerData.name,
         scaledX,
         scaledY,
         playerData.color,
-        this.arena
+        this.arena,
+        isLocal
       );
       
       this.players.set(playerData.id, player);

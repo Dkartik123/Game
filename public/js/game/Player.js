@@ -1,5 +1,5 @@
 export class Player {
-  constructor(id, name, x, y, color, arena) {
+  constructor(id, name, x, y, color, arena, isLocal = false) {
     this.id = id;
     this.name = name;
     this.x = x;
@@ -10,11 +10,17 @@ export class Player {
     this.isAlive = true;
     this.powerUp = null;
     this.direction = 'down';
+    this.isLocal = isLocal;
     
     // Movement
     this.speed = 200; // pixels per second
     this.velocityX = 0;
     this.velocityY = 0;
+    
+    // Interpolation for remote players
+    this.targetX = x;
+    this.targetY = y;
+    this.interpolationSpeed = 0.2; // Smooth factor (0-1)
     
     // Attack cooldown
     this.lastAttackTime = 0;
@@ -53,8 +59,17 @@ export class Player {
   }
 
   setPosition(x, y) {
-    this.x = x;
-    this.y = y;
+    if (this.isLocal) {
+      // Local player - instant update
+      this.x = x;
+      this.y = y;
+      this.targetX = x;
+      this.targetY = y;
+    } else {
+      // Remote player - set target for interpolation
+      this.targetX = x;
+      this.targetY = y;
+    }
   }
 
   setDirection(direction) {
@@ -133,6 +148,23 @@ export class Player {
   }
 
   update(deltaTime) {
+    // Interpolate position for remote players
+    if (!this.isLocal) {
+      const dx = this.targetX - this.x;
+      const dy = this.targetY - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // If far from target, move towards it smoothly
+      if (distance > 0.5) {
+        this.x += dx * this.interpolationSpeed;
+        this.y += dy * this.interpolationSpeed;
+      } else {
+        // Snap to target if very close
+        this.x = this.targetX;
+        this.y = this.targetY;
+      }
+    }
+    
     // Update visual position (center the player at x,y coordinates)
     // Player is 40px wide, so offset by 20px to center
     this.element.style.left = `${this.x - 20}px`;
