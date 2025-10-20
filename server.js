@@ -375,7 +375,11 @@ io.on('connection', (socket) => {
 
     if (!room) return;
 
-    // Reset ALL players in the room
+    // First, stop the current game
+    room.isPlaying = false;
+    room.isPaused = false;
+    
+    // Reset ALL players in the room completely
     let playerIndex = 0;
     room.players.forEach((player, playerId) => {
       player.health = 100;
@@ -387,9 +391,7 @@ io.on('connection', (socket) => {
       playerIndex++;
     });
     
-    // Reset game state
-    room.isPlaying = true;
-    room.isPaused = false;
+    // Create completely fresh game state
     room.gameState = {
       orbs: generateOrbs(10),
       powerUps: [],
@@ -398,13 +400,17 @@ io.on('connection', (socket) => {
       pausedTime: 0
     };
     
-    // Notify all players to restart with fresh game state
+    // Set game as playing
+    room.isPlaying = true;
+    
+    // Notify all players to completely restart
     io.to(roomCode).emit('game-restarted', {
       players: Array.from(room.players.values()),
-      gameState: room.gameState
+      gameState: room.gameState,
+      serverTime: Date.now()
     });
     
-    console.log(`Game restarted in room ${roomCode}`);
+    console.log(`Game fully restarted in room ${roomCode}`);
   });
 
   // Game over

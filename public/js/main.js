@@ -91,7 +91,8 @@ class BattleArenaGame {
     // Game over buttons
     document.getElementById('play-again-btn').addEventListener('click', () => {
       this.audio.playSound('click');
-      this.ui.showScreen('lobby-screen');
+      // Request game restart from server
+      this.network.restartGame();
     });
 
     document.getElementById('main-menu-btn').addEventListener('click', () => {
@@ -142,16 +143,20 @@ class BattleArenaGame {
 
     this.network.on('game-restarted', (data) => {
       // Full game restart for all players
-      this.audio.playSound('game-start');
+      console.log('Game restarting with fresh state...');
       
-      // Stop current game if running
+      // Completely stop and cleanup current game
       if (this.game) {
         this.game.stop();
         this.game = null;
       }
       
-      // Start fresh game with reset state
-      this.startGame(data);
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => {
+        this.audio.playSound('game-start');
+        // Start completely fresh game
+        this.startGame(data);
+      }, 100);
     });
 
     this.network.on('player-left', (data) => {

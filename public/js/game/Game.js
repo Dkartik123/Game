@@ -475,17 +475,50 @@ export class Game {
   }
 
   cleanup() {
-    // Remove all game objects
-    this.players.forEach(player => player.remove());
-    this.orbs.forEach(orb => orb.remove());
-    this.powerUps.forEach(powerUp => powerUp.remove());
+    console.log('Cleaning up game state...');
     
+    // Remove all game objects
+    this.players.forEach(player => {
+      try {
+        player.remove();
+      } catch (e) {
+        console.warn('Error removing player:', e);
+      }
+    });
+    
+    this.orbs.forEach(orb => {
+      try {
+        orb.remove();
+      } catch (e) {
+        console.warn('Error removing orb:', e);
+      }
+    });
+    
+    this.powerUps.forEach(powerUp => {
+      try {
+        powerUp.remove();
+      } catch (e) {
+        console.warn('Error removing powerup:', e);
+      }
+    });
+    
+    // Clear collections
     this.players.clear();
     this.orbs = [];
     this.powerUps = [];
     
-    // Clear arena
-    this.arena.innerHTML = '';
+    // Clear arena completely
+    if (this.arena) {
+      this.arena.innerHTML = '';
+    }
+    
+    // Hide any overlays
+    const powerUpIndicator = document.getElementById('power-up-indicator');
+    if (powerUpIndicator) {
+      powerUpIndicator.classList.add('hidden');
+    }
+    
+    console.log('Game cleanup complete');
   }
 }
 
