@@ -16,6 +16,10 @@ export class Player {
     this.velocityX = 0;
     this.velocityY = 0;
     
+    // Attack cooldown
+    this.lastAttackTime = 0;
+    this.attackCooldown = 500; // 500ms between attacks
+    
     this.element = this.createElement(arena);
   }
 
@@ -69,22 +73,38 @@ export class Player {
   }
 
   attack() {
-    this.element.classList.add('attacking');
-    setTimeout(() => {
-      this.element.classList.remove('attacking');
-    }, 300);
+    // Check cooldown
+    const now = Date.now();
+    if (now - this.lastAttackTime < this.attackCooldown) {
+      return; // Attack on cooldown
+    }
+    this.lastAttackTime = now;
     
-    // Create attack effect
-    const effect = document.createElement('div');
-    effect.className = 'attack-effect';
-    effect.style.left = `${this.x - 40}px`;
-    effect.style.top = `${this.y - 40}px`;
-    effect.style.borderColor = this.color;
-    this.element.parentElement.appendChild(effect);
+    // Add attacking animation
+    if (this.element) {
+      this.element.classList.add('attacking');
+      setTimeout(() => {
+        if (this.element) {
+          this.element.classList.remove('attacking');
+        }
+      }, 300);
+    }
     
-    setTimeout(() => {
-      effect.remove();
-    }, 500);
+    // Create attack effect safely
+    if (this.element && this.element.parentElement) {
+      const effect = document.createElement('div');
+      effect.className = 'attack-effect';
+      effect.style.left = `${this.x - 40}px`;
+      effect.style.top = `${this.y - 40}px`;
+      effect.style.borderColor = this.color;
+      this.element.parentElement.appendChild(effect);
+      
+      setTimeout(() => {
+        if (effect && effect.parentElement) {
+          effect.remove();
+        }
+      }, 500);
+    }
   }
 
   setPowerUp(powerUpType) {

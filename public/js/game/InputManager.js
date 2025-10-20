@@ -5,6 +5,8 @@ export class InputManager {
     this.lastSentPosition = { x: 0, y: 0 };
     this.positionUpdateThrottle = 50; // ms
     this.lastPositionUpdate = 0;
+    this.lastAttackTime = 0;
+    this.attackCooldown = 500; // 500ms between attacks
     
     this.setupKeyboardListeners();
   }
@@ -99,6 +101,13 @@ export class InputManager {
 
   handleAttack() {
     if (!this.game.localPlayer || !this.game.localPlayer.isAlive || this.game.isPaused) return;
+    
+    // Check cooldown
+    const now = Date.now();
+    if (now - this.lastAttackTime < this.attackCooldown) {
+      return; // Attack on cooldown
+    }
+    this.lastAttackTime = now;
     
     this.game.localPlayer.attack();
     this.game.network.attack();
