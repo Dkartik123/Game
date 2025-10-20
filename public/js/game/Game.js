@@ -469,11 +469,19 @@ export class Game {
     nameElement.textContent = names[powerUpType] || powerUpType;
     indicator.classList.remove('hidden');
     
-    // Animate countdown bar
+    // Reset countdown bar animation
     const bar = document.getElementById('power-up-bar-fill');
+    
+    // Remove any existing transition and reset immediately
+    bar.style.transition = 'none';
     bar.style.width = '100%';
-    bar.style.transition = 'width 10s linear';
+    
+    // Force reflow to ensure the change is applied
+    void bar.offsetWidth;
+    
+    // Start new animation after a brief delay
     setTimeout(() => {
+      bar.style.transition = 'width 10s linear';
       bar.style.width = '0%';
     }, 50);
   }
