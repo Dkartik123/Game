@@ -2,6 +2,12 @@
 
 A real-time multiplayer browser battle arena game for 2-4 players.
 
+## 🎮 Live Demo
+
+**Play Now**: [https://game-iqra.onrender.com/](https://game-iqra.onrender.com/)
+
+No installation required - just open the link and start playing with friends!
+
 ## Features
 
 - **Real-time Multiplayer**: 2-4 players can join and play simultaneously
