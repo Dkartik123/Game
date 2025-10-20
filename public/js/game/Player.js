@@ -125,13 +125,40 @@ export class Player {
   setPowerUp(powerUpType) {
     this.powerUp = powerUpType;
     this.element.classList.add(powerUpType);
+    
+    // Initialize speed particle tracking
+    if (powerUpType === 'speed') {
+      this.lastParticleTime = 0;
+      this.particleInterval = 50; // Create particle every 50ms
+    }
   }
 
   clearPowerUp() {
     if (this.powerUp) {
       this.element.classList.remove(this.powerUp);
       this.powerUp = null;
+      this.lastParticleTime = 0;
     }
+  }
+  
+  createSpeedParticle() {
+    if (!this.element || !this.element.parentElement) return;
+    
+    const particle = document.createElement('div');
+    particle.className = 'speed-particle';
+    particle.style.backgroundColor = this.color;
+    particle.style.left = `${this.x - 4}px`;
+    particle.style.top = `${this.y - 4}px`;
+    particle.style.boxShadow = `0 0 10px ${this.color}`;
+    
+    this.element.parentElement.appendChild(particle);
+    
+    // Remove particle after animation
+    setTimeout(() => {
+      if (particle && particle.parentElement) {
+        particle.remove();
+      }
+    }, 500);
   }
 
   die() {
@@ -162,6 +189,15 @@ export class Player {
         // Snap to target if very close
         this.x = this.targetX;
         this.y = this.targetY;
+      }
+    }
+    
+    // Create speed particles if moving with speed boost
+    if (this.powerUp === 'speed' && (this.velocityX !== 0 || this.velocityY !== 0)) {
+      const now = Date.now();
+      if (now - this.lastParticleTime >= this.particleInterval) {
+        this.createSpeedParticle();
+        this.lastParticleTime = now;
       }
     }
     
