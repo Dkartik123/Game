@@ -135,7 +135,8 @@ io.on('connection', (socket) => {
 
     io.to(roomCode).emit('game-started', {
       players: Array.from(room.players.values()),
-      gameState: room.gameState
+      gameState: room.gameState,
+      serverTime: Date.now()
     });
 
     console.log(`Game started in room ${roomCode}`);
@@ -302,10 +303,18 @@ io.on('connection', (socket) => {
     room.isPaused = true;
     room.pauseStartTime = Date.now();
     const player = room.players.get(socket.id);
+    
+    // Send synchronized time to all clients
+    const currentServerTime = Date.now();
+    const elapsed = Math.floor((currentServerTime - room.gameState.startTime) / 1000);
+    const remaining = Math.max(0, room.gameState.duration - elapsed);
+    
     io.to(roomCode).emit('game-paused', {
       playerId: socket.id,
       playerName: player?.name || 'Unknown',
-      isPaused: true
+      isPaused: true,
+      serverTime: currentServerTime,
+      remainingTime: remaining
     });
   });
 
@@ -320,16 +329,26 @@ io.on('connection', (socket) => {
     if (room.pauseStartTime) {
       const pausedDuration = Date.now() - room.pauseStartTime;
       room.gameState.pausedTime += pausedDuration;
+      // Adjust start time to account for pause
+      room.gameState.startTime += pausedDuration;
     }
     
     room.isPaused = false;
     room.pauseStartTime = null;
     const player = room.players.get(socket.id);
+    
+    // Send synchronized time to all clients
+    const currentServerTime = Date.now();
+    const elapsed = Math.floor((currentServerTime - room.gameState.startTime) / 1000);
+    const remaining = Math.max(0, room.gameState.duration - elapsed);
+    
     io.to(roomCode).emit('game-resumed', {
       playerId: socket.id,
       playerName: player?.name || 'Unknown',
       isPaused: false,
-      totalPausedTime: room.gameState.pausedTime
+      serverTime: currentServerTime,
+      gameStartTime: room.gameState.startTime,
+      remainingTime: remaining
     });
   });
 

@@ -105,6 +105,15 @@ export class Game {
       // Pause game for ALL players in the room
       if (data.isPaused && !this.isPaused) {
         this.isPaused = true;
+        // Synchronize timer with server before pausing
+        if (data.serverTime && data.remainingTime !== undefined) {
+          // Calculate server time offset
+          const clientTime = Date.now();
+          const serverOffset = data.serverTime - clientTime;
+          // Adjust game start time to match server
+          this.gameStartTime = data.serverTime - ((this.gameDuration - data.remainingTime) * 1000);
+          console.log('Timer synchronized on pause:', data.remainingTime, 'seconds remaining');
+        }
         // Show pause overlay for all players
         const pauseOverlay = document.getElementById('game-menu-overlay');
         if (pauseOverlay) {
@@ -135,9 +144,10 @@ export class Game {
             menuTitle.textContent = 'Game Paused';
           }
         }
-        // Update timer if paused time was tracked
-        if (data.totalPausedTime) {
-          this.gameStartTime += data.totalPausedTime;
+        // Synchronize timer with server
+        if (data.gameStartTime) {
+          this.gameStartTime = data.gameStartTime;
+          console.log('Timer synchronized with server:', data.remainingTime, 'seconds remaining');
         }
       }
     });
