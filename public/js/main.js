@@ -140,40 +140,24 @@ class BattleArenaGame {
       }
     });
 
-    this.network.on('player-restarted', (data) => {
-      // Only show notification if it's not the local player
-      if (data.playerId !== this.network.playerId) {
-        this.ui.showNotification(`${data.playerName} restarted their game`, 'info');
-      } else {
-        // Reset local player if it's us
-        if (this.game && this.game.localPlayer) {
-          this.game.localPlayer.revive();
-          this.game.localPlayer.score = 0;
-          this.game.localPlayer.clearPowerUp();
-          this.ui.hidePowerUpIndicator();
-          this.game.updateScoreboard();
-        }
+    this.network.on('game-restarted', (data) => {
+      // Full game restart for all players
+      this.audio.playSound('game-start');
+      
+      // Stop current game if running
+      if (this.game) {
+        this.game.stop();
+        this.game = null;
       }
+      
+      // Start fresh game with reset state
+      this.startGame(data);
     });
 
     this.network.on('player-left', (data) => {
       this.ui.showNotification(`${data.playerName} left the lobby`, 'warning');
       if (this.game) {
         this.game.removePlayer(data.playerId);
-      }
-    });
-
-    this.network.on('game-paused', (data) => {
-      // Only show notification to other players (not the one who paused)
-      if (this.game && data.playerId !== this.network.playerId) {
-        this.ui.showNotification(`${data.playerName} paused their game`, 'info');
-      }
-    });
-
-    this.network.on('game-resumed', (data) => {
-      // Only show notification to other players (not the one who resumed)
-      if (this.game && data.playerId !== this.network.playerId) {
-        this.ui.showNotification(`${data.playerName} resumed their game`, 'info');
       }
     });
 
@@ -258,18 +242,11 @@ class BattleArenaGame {
   }
 
   restartGame() {
-    if (this.game) {
-      // Hide the menu
-      this.ui.hideGameMenu();
-      
-      // Resume game if paused
-      if (this.game.isPaused) {
-        this.game.resume();
-      }
-      
-      // Send restart request to server
-      this.network.restartGame();
-    }
+    // Send restart request to server (will trigger game-restarted event)
+    this.network.restartGame();
+    
+    // Hide menu immediately
+    this.ui.hideGameMenu();
   }
 
   quitGame() {

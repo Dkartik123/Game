@@ -124,11 +124,13 @@ io.on('connection', (socket) => {
     }
 
     room.isPlaying = true;
+    room.isPaused = false;
     room.gameState = {
       orbs: generateOrbs(10),
       powerUps: [],
       startTime: Date.now(),
-      duration: 180 // 3 minutes
+      duration: 180, // 3 minutes
+      pausedTime: 0 // Track total paused time
     };
 
     io.to(roomCode).emit('game-started', {
@@ -238,6 +240,22 @@ io.on('connection', (socket) => {
         targetScore: target.score,
         targetIsAlive: target.isAlive
       });
+      
+      // Check if only one player is alive and end game
+      const alivePlayers = Array.from(room.players.values()).filter(p => p.isAlive);
+      if (alivePlayers.length <= 1 && room.players.size > 1) {
+        const players = Array.from(room.players.values());
+        const winner = players.reduce((max, p) => p.score > max.score ? p : max, players[0]);
+        
+        io.to(roomCode).emit('game-ended', {
+          winner: winner.name,
+          finalScores: players.map(p => ({ name: p.name, score: p.score })),
+          reason: alivePlayers.length === 0 ? 'Everyone is eliminated!' : `${winner.name} is the last player standing!`
+        });
+        
+        room.isPlaying = false;
+        console.log(`Game in room ${roomCode} ended - only ${alivePlayers.length} player(s) alive`);
+      }
     }
   });
 
@@ -279,12 +297,15 @@ io.on('connection', (socket) => {
     const roomCode = socket.roomCode;
     const room = gameRooms.get(roomCode);
 
-    if (!room) return;
+    if (!room || room.isPaused) return;
 
+    room.isPaused = true;
+    room.pauseStartTime = Date.now();
     const player = room.players.get(socket.id);
     io.to(roomCode).emit('game-paused', {
       playerId: socket.id,
-      playerName: player?.name || 'Unknown'
+      playerName: player?.name || 'Unknown',
+      isPaused: true
     });
   });
 
@@ -293,12 +314,22 @@ io.on('connection', (socket) => {
     const roomCode = socket.roomCode;
     const room = gameRooms.get(roomCode);
 
-    if (!room) return;
+    if (!room || !room.isPaused) return;
 
+    // Track total paused time
+    if (room.pauseStartTime) {
+      const pausedDuration = Date.now() - room.pauseStartTime;
+      room.gameState.pausedTime += pausedDuration;
+    }
+    
+    room.isPaused = false;
+    room.pauseStartTime = null;
     const player = room.players.get(socket.id);
     io.to(roomCode).emit('game-resumed', {
       playerId: socket.id,
-      playerName: player?.name || 'Unknown'
+      playerName: player?.name || 'Unknown',
+      isPaused: false,
+      totalPausedTime: room.gameState.pausedTime
     });
   });
 
@@ -318,33 +349,43 @@ io.on('connection', (socket) => {
     handlePlayerLeave(socket, room, roomCode);
   });
 
-  // Restart game
+  // Restart game (Play Again)
   socket.on('restart-game', () => {
     const roomCode = socket.roomCode;
     const room = gameRooms.get(roomCode);
 
     if (!room) return;
 
-    const player = room.players.get(socket.id);
-    
-    // Notify all players about the restart request
-    io.to(roomCode).emit('player-restarted', {
-      playerId: socket.id,
-      playerName: player?.name || 'Unknown'
-    });
-
-    // Reset player state for the requesting player
-    if (player) {
+    // Reset ALL players in the room
+    let playerIndex = 0;
+    room.players.forEach((player, playerId) => {
       player.health = 100;
       player.isAlive = true;
       player.score = 0;
       player.powerUp = null;
-      
-      // Reset position
-      const playerIndex = Array.from(room.players.keys()).indexOf(socket.id);
       player.x = 100 + (playerIndex * 150);
       player.y = 100 + (playerIndex * 100);
-    }
+      playerIndex++;
+    });
+    
+    // Reset game state
+    room.isPlaying = true;
+    room.isPaused = false;
+    room.gameState = {
+      orbs: generateOrbs(10),
+      powerUps: [],
+      startTime: Date.now(),
+      duration: 180,
+      pausedTime: 0
+    };
+    
+    // Notify all players to restart with fresh game state
+    io.to(roomCode).emit('game-restarted', {
+      players: Array.from(room.players.values()),
+      gameState: room.gameState
+    });
+    
+    console.log(`Game restarted in room ${roomCode}`);
   });
 
   // Game over

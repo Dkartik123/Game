@@ -92,6 +92,10 @@ export class NetworkManager {
     this.socket.on('game-ended', (data) => {
       this.emit('game-ended', data);
     });
+    
+    this.socket.on('game-restarted', (data) => {
+      this.emit('game-restarted', data);
+    });
   }
 
   // Event emitter pattern

@@ -549,6 +549,7 @@ h3 {
   transform: translate(-50%, -50%);
   width: 100vw;
   height: 100vh;
+  box-sizing: border-box; /* Include border in dimensions */
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   border: 4px solid var(--primary-color);
   border-radius: 10px;

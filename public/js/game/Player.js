@@ -113,9 +113,10 @@ export class Player {
   }
 
   update(deltaTime) {
-    // Update visual position
-    this.element.style.left = `${this.x}px`;
-    this.element.style.top = `${this.y}px`;
+    // Update visual position (center the player at x,y coordinates)
+    // Player is 40px wide, so offset by 20px to center
+    this.element.style.left = `${this.x - 20}px`;
+    this.element.style.top = `${this.y - 20}px`;
     
     // Update health bar
     const healthFill = this.element.querySelector('.player-health-fill');

@@ -13,12 +13,12 @@ export class Game {
     
     this.arena = document.getElementById('game-arena');
     // Get actual arena dimensions from the element
-    // Use clientWidth/clientHeight for inner dimensions (excluding borders)
+    // Use clientWidth/clientHeight for playable area (excludes borders)
     this.arenaWidth = this.arena.clientWidth;
     this.arenaHeight = this.arena.clientHeight;
     
-    console.log('Arena dimensions:', this.arenaWidth, 'x', this.arenaHeight);
-    console.log('Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+    console.log('Arena playable dimensions:', this.arenaWidth, 'x', this.arenaHeight);
+    console.log('Arena total dimensions:', this.arena.offsetWidth, 'x', this.arena.offsetHeight);
     
     this.localPlayerId = network.socket.id;
     this.localPlayer = null;
@@ -101,6 +101,47 @@ export class Game {
       }
     });
 
+    this.network.on('game-paused', (data) => {
+      // Pause game for ALL players in the room
+      if (data.isPaused && !this.isPaused) {
+        this.isPaused = true;
+        // Show pause overlay for all players
+        const pauseOverlay = document.getElementById('game-menu-overlay');
+        if (pauseOverlay) {
+          pauseOverlay.classList.remove('hidden');
+          // Update message to show who paused
+          if (data.playerId !== this.localPlayerId) {
+            const menuTitle = pauseOverlay.querySelector('h2');
+            if (menuTitle) {
+              menuTitle.textContent = `${data.playerName} Paused the Game`;
+            }
+          }
+        }
+      }
+    });
+
+    this.network.on('game-resumed', (data) => {
+      // Resume game for ALL players in the room
+      if (!data.isPaused && this.isPaused) {
+        this.isPaused = false;
+        this.lastFrameTime = performance.now();
+        // Hide pause overlay for all players
+        const pauseOverlay = document.getElementById('game-menu-overlay');
+        if (pauseOverlay) {
+          pauseOverlay.classList.add('hidden');
+          // Reset menu title
+          const menuTitle = pauseOverlay.querySelector('h2');
+          if (menuTitle) {
+            menuTitle.textContent = 'Game Paused';
+          }
+        }
+        // Update timer if paused time was tracked
+        if (data.totalPausedTime) {
+          this.gameStartTime += data.totalPausedTime;
+        }
+      }
+    });
+    
     this.network.on('orb-collected', (data) => {
       const orbIndex = this.orbs.findIndex(o => o.id === data.orbId);
       if (orbIndex !== -1) {
@@ -310,9 +351,12 @@ export class Game {
   }
 
   constrainPlayerPosition(player) {
-    const margin = 20;
-    player.x = Math.max(margin, Math.min(this.arenaWidth - margin, player.x));
-    player.y = Math.max(margin, Math.min(this.arenaHeight - margin, player.y));
+    // Player is 40px wide (radius 20px), keep within arena bounds
+    const playerRadius = 20;
+    const padding = playerRadius + 2; // Small extra padding for safety
+    
+    player.x = Math.max(padding, Math.min(this.arenaWidth - padding, player.x));
+    player.y = Math.max(padding, Math.min(this.arenaHeight - padding, player.y));
   }
 
   checkOrbCollisions() {
