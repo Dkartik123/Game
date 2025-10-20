@@ -274,7 +274,7 @@ class BattleArenaGame {
       this.game = null;
     }
 
-    this.ui.showGameOver(data.winner, data.finalScores, data.reason);
+    this.ui.showGameOver(data.winner, data.finalScores, data.reason, data.isDraw);
   }
 }
 

@@ -246,16 +246,27 @@ io.on('connection', (socket) => {
       const alivePlayers = Array.from(room.players.values()).filter(p => p.isAlive);
       if (alivePlayers.length <= 1 && room.players.size > 1) {
         const players = Array.from(room.players.values());
-        const winner = players.reduce((max, p) => p.score > max.score ? p : max, players[0]);
+        const result = determineWinner(players);
+        
+        let winnerText, reason;
+        if (result.isDraw) {
+          const winnerNames = result.winners.map(w => w.name).join(' and ');
+          winnerText = `Draw: ${winnerNames}`;
+          reason = alivePlayers.length === 0 ? 'Everyone is eliminated - Draw!' : `Draw between ${winnerNames}!`;
+        } else {
+          winnerText = result.winners[0].name;
+          reason = alivePlayers.length === 0 ? 'Everyone is eliminated!' : `${result.winners[0].name} is the last player standing!`;
+        }
         
         io.to(roomCode).emit('game-ended', {
-          winner: winner.name,
+          winner: winnerText,
           finalScores: players.map(p => ({ name: p.name, score: p.score })),
-          reason: alivePlayers.length === 0 ? 'Everyone is eliminated!' : `${winner.name} is the last player standing!`
+          reason: reason,
+          isDraw: result.isDraw
         });
         
         room.isPlaying = false;
-        console.log(`Game in room ${roomCode} ended - only ${alivePlayers.length} player(s) alive`);
+        console.log(`Game in room ${roomCode} ended - ${reason}`);
       }
     }
   });
@@ -422,11 +433,19 @@ io.on('connection', (socket) => {
     if (!room || room.host !== socket.id) return;
 
     const players = Array.from(room.players.values());
-    const winner = players.reduce((max, p) => p.score > max.score ? p : max, players[0]);
+    const result = determineWinner(players);
+    
+    let winnerText;
+    if (result.isDraw) {
+      winnerText = `Draw: ${result.winners.map(w => w.name).join(' and ')}`;
+    } else {
+      winnerText = result.winners[0].name;
+    }
 
     io.to(roomCode).emit('game-ended', {
-      winner: winner.name,
-      finalScores: players.map(p => ({ name: p.name, score: p.score }))
+      winner: winnerText,
+      finalScores: players.map(p => ({ name: p.name, score: p.score })),
+      isDraw: result.isDraw
     });
 
     room.isPlaying = false;
@@ -445,6 +464,24 @@ io.on('connection', (socket) => {
     }
   });
 });
+
+function determineWinner(players) {
+  if (players.length === 0) {
+    return { isDraw: false, winners: [], maxScore: 0 };
+  }
+  
+  // Find max score
+  const maxScore = Math.max(...players.map(p => p.score));
+  
+  // Find all players with max score
+  const winners = players.filter(p => p.score === maxScore);
+  
+  return {
+    isDraw: winners.length > 1,
+    winners: winners,
+    maxScore: maxScore
+  };
+}
 
 function handlePlayerLeave(socket, room, roomCode) {
   const player = room.players.get(socket.id);
@@ -473,7 +510,8 @@ function handlePlayerLeave(socket, room, roomCode) {
       io.to(roomCode).emit('game-ended', {
         winner: remainingPlayer.name,
         finalScores: [{ name: remainingPlayer.name, score: remainingPlayer.score }],
-        reason: 'All other players left the game'
+        reason: 'All other players left the game',
+        isDraw: false
       });
 
       room.isPlaying = false;
@@ -544,16 +582,27 @@ setInterval(() => {
       // Auto end game if time is up
       if (remaining === 0) {
         const players = Array.from(room.players.values());
-        const winner = players.reduce((max, p) => p.score > max.score ? p : max, players[0]);
+        const result = determineWinner(players);
+        
+        let winnerText, reason;
+        if (result.isDraw) {
+          const winnerNames = result.winners.map(w => w.name).join(' and ');
+          winnerText = `Draw: ${winnerNames}`;
+          reason = `Time is up! Draw between ${winnerNames}!`;
+        } else {
+          winnerText = result.winners[0].name;
+          reason = 'Time is up!';
+        }
         
         io.to(roomCode).emit('game-ended', {
-          winner: winner.name,
+          winner: winnerText,
           finalScores: players.map(p => ({ name: p.name, score: p.score })),
-          reason: 'Time is up!'
+          reason: reason,
+          isDraw: result.isDraw
         });
         
         room.isPlaying = false;
-        console.log(`Game in room ${roomCode} ended - time's up`);
+        console.log(`Game in room ${roomCode} ended - ${reason}`);
       }
     }
   });

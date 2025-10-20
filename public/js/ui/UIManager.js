@@ -86,14 +86,19 @@ export class UIManager {
     overlay.classList.add('hidden');
   }
 
-  showGameOver(winner, finalScores, reason) {
+  showGameOver(winner, finalScores, reason, isDraw = false) {
     this.showScreen('game-over-screen');
     
-    // Display winner
+    // Display winner or draw
     const winnerDisplay = document.getElementById('winner-display');
-    if (reason) {
+    if (isDraw) {
+      winnerDisplay.textContent = `🤝 ${winner} 🤝`;
+    } else {
       winnerDisplay.textContent = `🏆 ${winner} WINS! 🏆`;
-      // Show reason below winner
+    }
+    
+    // Show reason below winner
+    if (reason) {
       const gameOverContainer = document.querySelector('.game-over-container');
       const existingReason = gameOverContainer.querySelector('.game-over-reason');
       if (existingReason) {
@@ -103,8 +108,6 @@ export class UIManager {
       reasonEl.className = 'game-over-reason';
       reasonEl.textContent = reason;
       winnerDisplay.insertAdjacentElement('afterend', reasonEl);
-    } else {
-      winnerDisplay.textContent = `🏆 ${winner} WINS! 🏆`;
     }
     
     // Display final scores
@@ -114,10 +117,17 @@ export class UIManager {
     // Sort scores
     const sortedScores = [...finalScores].sort((a, b) => b.score - a.score);
     
+    // Find max score for highlighting winners in draw
+    const maxScore = sortedScores.length > 0 ? sortedScores[0].score : 0;
+    
     sortedScores.forEach((player, index) => {
       const scoreItem = document.createElement('div');
       scoreItem.className = 'final-score-item';
-      if (index === 0) {
+      
+      // Highlight all players with max score if draw
+      if (isDraw && player.score === maxScore) {
+        scoreItem.classList.add('first');
+      } else if (index === 0) {
         scoreItem.classList.add('first');
       }
       
