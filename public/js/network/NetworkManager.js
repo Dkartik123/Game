@@ -96,6 +96,10 @@ export class NetworkManager {
     this.socket.on('game-restarted', (data) => {
       this.emit('game-restarted', data);
     });
+    
+    this.socket.on('timer-sync', (data) => {
+      this.emit('timer-sync', data);
+    });
   }
 
   // Event emitter pattern

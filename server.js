@@ -518,6 +518,40 @@ setInterval(() => {
   });
 }, 15000); // Every 15 seconds
 
+// Synchronize timer across all clients periodically
+setInterval(() => {
+  gameRooms.forEach((room, roomCode) => {
+    if (room.isPlaying && !room.isPaused) {
+      const currentServerTime = Date.now();
+      const elapsed = Math.floor((currentServerTime - room.gameState.startTime) / 1000);
+      const remaining = Math.max(0, room.gameState.duration - elapsed);
+      
+      // Send timer sync to all clients
+      io.to(roomCode).emit('timer-sync', {
+        serverTime: currentServerTime,
+        gameStartTime: room.gameState.startTime,
+        remainingTime: remaining,
+        duration: room.gameState.duration
+      });
+      
+      // Auto end game if time is up
+      if (remaining === 0) {
+        const players = Array.from(room.players.values());
+        const winner = players.reduce((max, p) => p.score > max.score ? p : max, players[0]);
+        
+        io.to(roomCode).emit('game-ended', {
+          winner: winner.name,
+          finalScores: players.map(p => ({ name: p.name, score: p.score })),
+          reason: 'Time is up!'
+        });
+        
+        room.isPlaying = false;
+        console.log(`Game in room ${roomCode} ended - time's up`);
+      }
+    }
+  });
+}, 5000); // Every 5 seconds
+
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Local: http://localhost:${PORT}`);

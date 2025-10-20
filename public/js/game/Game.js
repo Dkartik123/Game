@@ -232,6 +232,16 @@ export class Game {
       this.audio.playSound('hit');
       this.updateScoreboard();
     });
+    
+    this.network.on('timer-sync', (data) => {
+      // Periodically sync timer with server to prevent drift
+      if (!this.isPaused && data.gameStartTime) {
+        this.gameStartTime = data.gameStartTime;
+        this.gameDuration = data.duration;
+        // Optional: log sync for debugging
+        // console.log('Timer synced:', data.remainingTime, 'seconds remaining');
+      }
+    });
   }
 
   start() {
@@ -328,10 +338,7 @@ export class Game {
       timerElement.classList.remove('warning');
     }
     
-    // End game when timer runs out
-    if (remaining === 0 && this.isRunning) {
-      this.network.gameOver();
-    }
+    // Server now controls game-over when timer runs out
   }
 
   updateScoreboard() {
