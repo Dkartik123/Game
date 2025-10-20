@@ -145,6 +145,9 @@ class BattleArenaGame {
       // Full game restart for all players
       console.log('Game restarting with fresh state...');
       
+      // Hide pause menu overlay immediately
+      this.ui.hideGameMenu();
+      
       // Completely stop and cleanup current game
       if (this.game) {
         this.game.stop();

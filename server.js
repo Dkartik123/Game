@@ -375,9 +375,10 @@ io.on('connection', (socket) => {
 
     if (!room) return;
 
-    // First, stop the current game
+    // First, stop the current game completely
     room.isPlaying = false;
     room.isPaused = false;
+    room.pauseStartTime = null;
     
     // Reset ALL players in the room completely
     let playerIndex = 0;

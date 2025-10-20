@@ -27,6 +27,16 @@ export class Game {
     this.isRunning = false;
     this.animationFrameId = null;
     
+    // Ensure pause overlay is hidden on game start
+    const pauseOverlay = document.getElementById('game-menu-overlay');
+    if (pauseOverlay) {
+      pauseOverlay.classList.add('hidden');
+      const menuTitle = pauseOverlay.querySelector('h2');
+      if (menuTitle) {
+        menuTitle.textContent = 'Game Paused';
+      }
+    }
+    
     // Performance tracking
     this.lastFrameTime = 0;
     this.fps = 60;
@@ -517,6 +527,19 @@ export class Game {
     if (powerUpIndicator) {
       powerUpIndicator.classList.add('hidden');
     }
+    
+    // Hide pause menu overlay
+    const pauseOverlay = document.getElementById('game-menu-overlay');
+    if (pauseOverlay) {
+      pauseOverlay.classList.add('hidden');
+      const menuTitle = pauseOverlay.querySelector('h2');
+      if (menuTitle) {
+        menuTitle.textContent = 'Game Paused';
+      }
+    }
+    
+    // Reset pause state
+    this.isPaused = false;
     
     console.log('Game cleanup complete');
   }
