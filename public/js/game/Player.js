@@ -172,8 +172,16 @@ export class Player {
     this.health = 100;
     this.element.style.opacity = '1';
     this.element.style.filter = 'none';
+    this.updateHealthBar();
   }
 
+  updateHealthBar() {
+    const healthFill = this.element.querySelector('.player-health-fill');
+    if (healthFill) {
+      healthFill.style.width = `${this.health}%`;
+    }
+  }
+  
   update(deltaTime) {
     // Interpolate position for remote players
     if (!this.isLocal) {
@@ -207,10 +215,7 @@ export class Player {
     this.element.style.top = `${this.y - 20}px`;
     
     // Update health bar
-    const healthFill = this.element.querySelector('.player-health-fill');
-    if (healthFill) {
-      healthFill.style.width = `${this.health}%`;
-    }
+    this.updateHealthBar();
   }
 
   remove() {

@@ -77,6 +77,14 @@ export class Game {
         isLocal
       );
       
+      // Set health, score and alive status from server data
+      player.health = playerData.health || 100;
+      player.score = playerData.score || 0;
+      player.isAlive = playerData.isAlive !== undefined ? playerData.isAlive : true;
+      
+      // Update visual representation
+      player.updateHealthBar();
+      
       this.players.set(playerData.id, player);
       
       if (playerData.id === this.localPlayerId) {
